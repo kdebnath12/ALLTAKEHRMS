@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Office Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .logo {
+      position: absolute;
+      top: 10px;
+      left: 20px; /* Moved right a little bit */
+      width: 100px; /* Increased size by 150% */
+      transform: scale(1.5);
+      z-index: 10; /* Ensure it's above the video */
+    }
+
+    .slideshow-container img {
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://alltake.com/assets/images/logo/logo.png" alt="Company Logo" class="logo">
+
+    <video class="background-video" autoplay muted loop>
+      <source src="{{ url_for('static', filename='videos/' + video_filename) }}" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
+  <div class="dashboard-content-wrapper">
+    <div class="column useful-cards-column">
+      <div class="grid-row">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-clipboard-list"></i> Office Rules</div>
+          <ul>
+            {% for item in data[0].data %}
+              <li>{{ item.rule }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-calendar-alt"></i> Upcoming Events</div>
+          <div class="items-container">
+            {% for item in data[1].data %}
+              <div class="item"><i class="fas fa-briefcase"></i><span>{{ item.event_name }} – {{ item.event_date }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card small-card">
+          <div class="card-title"><i class="fas fa-birthday-cake"></i> Birthdays This Week</div>
+          <div class="items-container">
+            {% for item in data[2].data %}
+              <div class="item birthday-item" data-name="{{ item.employee_name }}"><i class="fas fa-user"></i><span>{{ item.employee_name }} – {{ item.birthday_date }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card small-card">
+          <div class="card-title"><i class="fas fa-heart"></i> Anniversaries</div>
+          <div class="items-container">
+            {% for item in data[3].data %}
+              <div class="item anniversary-item" data-names="{{ item.names }}"><i class="fas fa-user-friends"></i><span>{{ item.names }} – {{ item.anniversary_date }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-link"></i> Quick Links</div>
+            <div class="items-container">
+                {% for item in data[4].data %}
+                  <a href="{{ item.link_url }}" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fas fa-user-clock"></i><span>{{ item.link_name }}</span>
+                  </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-link"></i> Leave Portal</div>
+            <div class="items-container">
+                {% for item in data[5].data %}
+                  <a href="{{ item.link_url }}" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fas fa-plane-departure"></i><span>{{ item.link_name }}</span>
+                  </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-share-alt"></i> Social Media Highlights</div>
+            <div class="items-container">
+                {% for item in data[6].data %}
+                  <p>{{ item.text }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-briefcase"></i> Career Opportunities</div>
+            <div class="items-container">
+                {% for item in data[7].data %}
+                  <div class="item"><i class="fas fa-bullhorn"></i><span>{{ item.job_title }}</span></div>
+                {% endfor %}
+            </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-bullhorn"></i> Word from HR</div>
+            <div class="items-container">
+                {% for item in data[8].data %}
+                  <p>{{ item.text }}</p>
+                {% endfor %}
+            </div>
+        </div>
+      </div>
+       <div class="grid-row">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-bell"></i> Quick Reminders</div>
+          <ul>
+            {% for item in data[9].data %}
+              <li>{{ item.reminder }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-holly-berry"></i> Upcoming Holidays</div>
+          <ul>
+            {% for item in data[10].data %}
+              <li>{{ item.holiday_name }} – {{ item.holiday_date }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="column engagement-cards-column">
+      <div class="grid-row">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-images"></i> Photo Gallery</div>
+          <div class="slideshow-container" id="slideshowContainerElement">
+            <div class="slides" id="slides">
+              {% for item in data[11].data %}
+                <img src="{{ item.image_url }}" alt="Image" />
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-images"></i> Photo Gallery 2</div>
+          <div class="slideshow-container" id="slideshowContainerElement2">
+            <div class="slides" id="slides2">
+              {% for item in data[11].data %}
+                <img src="{{ item.image_url }}" alt="Image" />
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-award"></i> Rewards & Recognitions</div>
+            <div class="items-container">
+                {% for item in data[12].data %}
+                  <div class="recognition-item">
+                    <img src="https://i.pravatar.cc/50?img=68" alt="Employee Photo" class="photo" />
+                    <div class="details">
+                        <span class="name">{{ item.employee_name }}</span>
+                        <span>{{ item.employee_title }}</span>
+                        <span class="award">{{ item.award }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+      <div class="grid-row">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-lightbulb"></i> Fun Facts</div>
+            <div class="items-container">
+                <div class="item"><span>Avg. coffees consumed daily: 300+</span></div>
+                <div class="item"><span>Code deployed last month: 2M+ lines</span></div>
+                <div class="item"><span>Team members from 12+ countries!</span></div>
+            </div>
+        </div>
+      </div>
+      <div class="grid-row">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-hashtag"></i> Follow Our Journey</div>
+            <div class="items-container">
+                <a href="https://linkedin.com/company/alltake" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fab fa-linkedin"></i><span>LinkedIn</span>
+                </a>
+                <a href="https://www.facebook.com/AlltakeB2B/" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fab fa-facebook-square"></i><span>Facebook</span>
+                </a>
+                <a href="https://www.instagram.com/alltakeb2b/" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fab fa-instagram"></i><span>Instagram</span>
+                </a>
+                <a href="https://x.com/i/flow/login?redirect_after_login=%2Falltake_b2b" target="_blank" rel="noopener noreferrer" class="item">
+                    <i class="fab fa-x-twitter"></i><span>X (Twitter)</span>
+                </a>
+            </div>
+        </div>
+      </div>
+      <div class="grid-row">
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <span class="lightbox-close" onclick="closeLightbox()">×</span>
+    <a class="lightbox-prev" onclick="changeSlide(-1)">❮</a>
+    <a class="lightbox-next" onclick="changeSlide(1)">❯</a>
+    <img src="" alt="" />
+  </div>
+
+  <script>
+    function changeWeather(weather, videoSource) {
+      const video = document.querySelector('.background-video');
+      video.src = videoSource;
+      video.load();
+      video.play();
+    }
+
+    function openLightbox(event) {
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = lightbox.querySelector('img');
+      lightboxImg.src = event.target.src;
+      lightbox.classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById("lightbox").classList.remove('active');
+    }
+
+    function changeSlide(n) {
+      const lightboxImg = document.querySelector('.lightbox img');
+      const currentSrc = lightboxImg.src;
+      const slides = document.querySelectorAll('.slideshow-container img');
+      let currentIndex = Array.from(slides).findIndex(img => img.src === currentSrc);
+
+      currentIndex = (currentIndex + n + slides.length) % slides.length;
+      lightboxImg.src = slides[currentIndex].src;
+    }
+
+    let slideIndex1 = 1;
+    let slideIndex2 = 1;
+    showSlides(slideIndex1, "slides1");
+    showSlides(slideIndex2, "slides2");
+
+    function changeSlide(n, slideshowId) {
+      if (slideshowId === "slides1") {
+        showSlides(slideIndex1 += n, slideshowId);
+      } else if (slideshowId === "slides2") {
+        showSlides(slideIndex2 += n, slideshowId);
+      }
+    }
+
+    function showSlides(n, slideshowId) {
+      let i;
+      let slideIndex = 0;
+      if (slideshowId === "slides1") {
+        slideIndex = slideIndex1;
+      } else if (slideshowId === "slides2") {
+        slideIndex = slideIndex2;
+      }
+      const slides = document.getElementById(slideshowId).getElementsByTagName("img");
+      const lightboxImg = document.querySelector('.lightbox img');
+      const prevButton = document.querySelector('.lightbox-prev');
+      const nextButton = document.querySelector('.lightbox-next');
+
+      if (n > slides.length) {
+        if (slideshowId === "slides1") {
+          slideIndex1 = 1;
+          slideIndex = slideIndex1;
+        } else if (slideshowId === "slides2") {
+          slideIndex2 = 1;
+          slideIndex = slideIndex2
+        }
+      }
+      if (n < 1) {
+        if (slideshowId === "slides1") {
+          slideIndex1 = slides.length;
+          slideIndex = slideIndex1;
+        } else if (slideshowId === "slides2") {
+          slideIndex2 = slides.length;
+          slideIndex = slideIndex2;
+        }
+      }
+      for (i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+      }
+      if (slides[slideIndex - 1]) {
+        slides[slideIndex - 1].style.display = "block";
+        lightboxImg.src = slides[slideIndex - 1].src;
+      }
+
+      // Disable prev/next buttons if only one image
+      if (slides.length <= 1) {
+        prevButton.classList.add('disabled');
+        nextButton.classList.add('disabled');
+      } else {
+        prevButton.classList.remove('disabled');
+        nextButton.classList.remove('disabled');
+      }
+    }
+
+    const slideshowContainer1 = document.getElementById('slideshowContainerElement');
+    slideshowContainer1.addEventListener('click', function(event) {
+      if (event.target.tagName === 'IMG') {
+        openLightbox(event);
+      }
+    });
+    const slideshowContainer2 = document.getElementById('slideshowContainerElement2');
+    slideshowContainer2.addEventListener('click', function(event) {
+      if (event.target.tagName === 'IMG') {
+        openLightbox(event);
+      }
+    });
+
+    function openLightbox() {
+      document.getElementById("lightbox").classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById("lightbox").classList.remove('active');
+    }
+
+    function openGift() {
+      document.getElementById("giftOverlay").classList.add('opened');
+    }
+
+    function closeGift() {
+      document.getElementById("giftOverlay").classList.remove('opened');
+    }
+  </script>
+</body>
+</html>
