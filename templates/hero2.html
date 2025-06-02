@@ -3,185 +3,838 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Modern Office Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-    .logo {
-      position: absolute;
-      top: 10px;
-      left: 20px; /* Moved right a little bit */
-      width: 100px; /* Increased size by 150% */
-      transform: scale(1.5);
-      z-index: 10; /* Ensure it's above the video */
-    }
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    .slideshow-container img {
-      width: 100%;
-      height: auto;
-      cursor: pointer;
+  <title>Modern Office Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/hero2.css') }}">
+  <style>
+    /* Styles for Admin Controls (Copied from your provided HTML) */
+    .admin-controls-section { border: 1px solid #e0e0e0; margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 5px;}
+    .admin-controls-section h5 { margin-top: 0; color: #333; font-size: 0.9em; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom:10px;}
+    .admin-controls-section form { margin-bottom: 10px; }
+    .admin-controls-section label { font-weight: normal; margin-right: 5px; font-size:0.85em; display: block; margin-bottom: 3px;}
+    .admin-controls-section input[type="text"],
+    .admin-controls-section input[type="url"],
+    .admin-controls-section input[type="date"],
+    .admin-controls-section textarea {
+        width: calc(100% - 12px); margin-bottom: 8px; padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-size:0.85em;
+    }
+    .admin-controls-section textarea { min-height: 50px; }
+    .admin-controls-section .form-field-group { margin-bottom: 8px; }
+    .admin-controls-section button[type="submit"] { /* Specific to add item button */
+        background-color: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 3px; cursor: pointer; font-size: 0.85em;
+    }
+     .admin-controls-section button[type="submit"]:hover { background-color: #218838; }
+
+
+    .admin-action-button { /* General class for admin action buttons like delete banner/photo */
+        background-color: #dc3545; color: white; border: none; padding: 4px 8px; font-size: 0.8em; border-radius: 3px; cursor: pointer;
+    }
+    .admin-action-button:hover { background-color: #c82333; }
+
+    .delete-item-button { /* For deleting items within HRC cards */
+        background-color: #ffc107; color: black; padding: 2px 5px; font-size: 0.75em; border:none; border-radius:3px; line-height:1;
+    }
+    .delete-item-button:hover { background-color: #e0a800; }
+
+
+    .admin-login-logout-bar {
+        position: fixed; top: 10px; right: 10px; z-index: 10001; background-color: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 5px;
+    }
+    .admin-login-logout-bar span, .admin-login-logout-bar a { color: white; text-decoration: none; font-weight: bold; font-size: 0.9em;}
+
+
+    .item-actions { margin-left: 10px; flex-shrink: 0; }
+    .item-content-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .item-text-details { flex-grow: 1; font-size: 0.9em; /* Adjust font size of items */ }
+    .item-text-details .field-label { font-weight: bold; color: #555;}
+    .item-text-details .field-value { color: #333; }
+
+
+    .flashes-container {
+        position: fixed;
+        top: 50px; /* Adjust as needed, below admin bar */
+        right: 10px;
+        z-index: 10000; /* Above everything else */
+        width: 300px;
+    }
+    .flashes { list-style-type: none; padding: 0; margin: 0; }
+    .flashes li {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        opacity: 0.95;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85em;
+    }
+    .flashes li button.close-flash { background: none; border: none; font-size: 1.2em; cursor: pointer; color: inherit; padding:0 0 0 10px;}
+    .flashes li.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .flashes li.danger  { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .flashes li.warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .flashes li.info    { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+    .toggle-admin-form-button {
+        background-color: #6c757d; color: white; padding: 3px 7px; font-size: 0.7em; /* Smaller button */
+        border: none; border-radius: 3px; cursor: pointer; margin-left: 10px; vertical-align: middle;
+    }
+    .toggle-admin-form-button:hover { background-color: #5a6268;}
+    .card .card-title { display: flex; align-items: center; justify-content: space-between; } /* To push button to right */
+    .card .card-title .fas { margin-right: 8px; }
+    .card-title-text { flex-grow: 1; display: flex; align-items: center;} /* Group icon and text */
+
+    /* Style for slideshow figures and figcaptions */
+    .slideshow-container figure {
+        margin: 0; /* Reset default figure margin */
+        position: relative; /* For positioning figcaption and delete button */
+        line-height: 0; /* Prevent extra space below image */
+    }
+    .slideshow-container figcaption {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 5px 8px;
+        border-radius: 3px;
+        font-size: 0.85em;
+        line-height: 1.3;
+        max-width: calc(100% - 20px); /* Prevent overflow */
+    }
+    .slideshow-container figcaption span { display: block; font-size: 0.9em; opacity: 0.9; }
+    .slideshow-container figure .admin-action-button { /* For delete button on images */
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10; /* Ensure it's above the image/caption */
     }
   </style>
 </head>
 <body>
   <img src="https://alltake.com/assets/images/logo/logo.png" alt="Company Logo" class="logo">
 
-    <video class="background-video" autoplay muted loop>
-      <source src="{{ url_for('static', filename='videos/' + video_filename) }}" type="video/mp4">
-    </video>
-    <div class="overlay"></div>
+  <div class="admin-login-logout-bar">
+    {% if admin_logged_in %}
+        <span>Welcome, Admin!</span> <a href="{{ url_for('logout') }}" style="margin-left:10px;">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Admin Login</a>
+    {% endif %}
+  </div>
+
+  <div class="flashes-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }} <button class="close-flash" onclick="this.parentElement.style.display='none'">&times;</button></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <video class="background-video" autoplay muted loop>
+    <source src="{{ url_for('static', filename=video_filename) }}" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="overlay"></div>
 
   <div class="dashboard-content-wrapper">
     <div class="column useful-cards-column">
-      <div class="grid-row">
-        <div class="card">
-          <div class="card-title"><i class="fas fa-clipboard-list"></i> Office Rules</div>
-          <ul>
-            {% for item in data[0].data %}
-              <li>{{ item.rule }}</li>
-            {% endfor %}
-          </ul>
+      {% if data|length > 0 and data[0] %}{% set card_doc = data[0] %} {# Check if data[0] exists #}
+      <div class="card" id="card_admin_{{ card_doc._id }}">
+        <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-clipboard-list"></i> {{ card_doc.get('title', 'Office Rules') }}</span>
+            {% if admin_logged_in %}
+              <button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>
+            {% endif %}
         </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-calendar-alt"></i> Upcoming Events</div>
-          <div class="items-container">
-            {% for item in data[1].data %}
-              <div class="item"><i class="fas fa-briefcase"></i><span>{{ item.event_name }} – {{ item.event_date }}</span></div>
-            {% endfor %}
+        <ul>
+          {% for item in card_doc.get('data', []) %}
+            <li>
+              <div class="item-content-wrapper">
+                  <span class="item-text-details">{{ item.rule }}</span> {# Display the 'rule' field #}
+                  {% if admin_logged_in and item._id %}
+                  <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Are you sure you want to delete this rule: \'{{ item.rule|truncate(30, True) }}\'?')">
+                      <button type="submit" class="delete-item-button" title="Delete Rule">X</button>
+                  </form>
+                  {% endif %}
+              </div>
+            </li>
+          {% else %}
+            {% if not admin_logged_in %}<li>No office rules listed.</li>{% endif %}
+          {% endfor %}
+        </ul>
+        {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+          {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+          <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+            <h5>Add to "{{ card_title_for_struct }}"</h5>
+            {% if structure and structure.fields %}
+            <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+              {% for field_name, field_type in structure.fields.items() %}
+              <div class="form-field-group">
+                <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+              </div>
+              {% endfor %}<button type="submit">Add Item</button>
+            </form>
+            {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined in CARD_STRUCTURES. Cannot add items.</em></p>{% endif %}
           </div>
-        </div>
-      </div>
-      <div class="grid-row">
-        <div class="card small-card">
-          <div class="card-title"><i class="fas fa-birthday-cake"></i> Birthdays This Week</div>
-          <div class="items-container">
-            {% for item in data[2].data %}
-              <div class="item birthday-item" data-name="{{ item.employee_name }}"><i class="fas fa-user"></i><span>{{ item.employee_name }} – {{ item.birthday_date }}</span></div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      <div class="grid-row">
-        <div class="card small-card">
-          <div class="card-title"><i class="fas fa-heart"></i> Anniversaries</div>
-          <div class="items-container">
-            {% for item in data[3].data %}
-              <div class="item anniversary-item" data-names="{{ item.names }}"><i class="fas fa-user-friends"></i><span>{{ item.names }} – {{ item.anniversary_date }}</span></div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      <div class="grid-row">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-link"></i> Quick Links</div>
-            <div class="items-container">
-                {% for item in data[4].data %}
-                  <a href="{{ item.link_url }}" target="_blank" rel="noopener noreferrer" class="item">
-                    <i class="fas fa-user-clock"></i><span>{{ item.link_name }}</span>
-                  </a>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-link"></i> Leave Portal</div>
-            <div class="items-container">
-                {% for item in data[5].data %}
-                  <a href="{{ item.link_url }}" target="_blank" rel="noopener noreferrer" class="item">
-                    <i class="fas fa-plane-departure"></i><span>{{ item.link_name }}</span>
-                  </a>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-share-alt"></i> Social Media Highlights</div>
-            <div class="items-container">
-                {% for item in data[6].data %}
-                  <p>{{ item.text }}</p>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-briefcase"></i> Career Opportunities</div>
-            <div class="items-container">
-                {% for item in data[7].data %}
-                  <div class="item"><i class="fas fa-bullhorn"></i><span>{{ item.job_title }}</span></div>
-                {% endfor %}
-            </div>
-        </div>
-      </div>
-      <div class="grid-row">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-bullhorn"></i> Word from HR</div>
-            <div class="items-container">
-                {% for item in data[8].data %}
-                  <p>{{ item.text }}</p>
-                {% endfor %}
-            </div>
-        </div>
-      </div>
-       <div class="grid-row">
-        <div class="card">
-          <div class="card-title"><i class="fas fa-bell"></i> Quick Reminders</div>
-          <ul>
-            {% for item in data[9].data %}
-              <li>{{ item.reminder }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-holly-berry"></i> Upcoming Holidays</div>
-          <ul>
-            {% for item in data[10].data %}
-              <li>{{ item.holiday_name }} – {{ item.holiday_date }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-    </div>
+        {% endif %}
+      </div>{% else %}<div class="card"><div class="card-title">Office Rules</div><p>Card data not loaded.</p></div>{% endif %}
 
-    <div class="column engagement-cards-column">
+      {% if data|length > 1 and data[1] %}{% set card_doc = data[1] %}
+      <div class="card" id="card_admin_{{ card_doc._id }}">
+        <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-calendar-alt"></i> {{ card_doc.get('title', 'Upcoming Events') }}</span>
+            {% if admin_logged_in %}
+              <button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>
+            {% endif %}
+        </div>
+        <div class="items-container">
+          {% for item in card_doc.get('data', []) %}
+            <div class="item">
+              <div class="item-content-wrapper">
+                <span class="item-text-details"><i class="fas fa-briefcase"></i><span>{{ item.event_name }} – {{ item.event_date }}</span></span>
+                {% if admin_logged_in and item._id %}
+                <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete event: \'{{ item.event_name }}\'?')">
+                    <button type="submit" class="delete-item-button" title="Delete Event">X</button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          {% else %}
+             {% if not admin_logged_in %}<div class="item">No upcoming events.</div>{% endif %}
+          {% endfor %}
+        </div>
+        {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+          {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+          <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+            <h5>Add to "{{ card_title_for_struct }}"</h5>
+            {% if structure and structure.fields %}
+            <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+              {% for field_name, field_type in structure.fields.items() %}
+              <div class="form-field-group">
+                <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+              </div>
+              {% endfor %}<button type="submit">Add Item</button>
+            </form>
+            {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+          </div>
+        {% endif %}
+      </div>{% else %}<div class="card"><div class="card-title">Upcoming Events</div><p>Card data not loaded.</p></div>{% endif %}
+
+      {% if data|length > 2 and data[2] %}{% set card_doc = data[2] %}
+      <div class="grid-row"> <div class="card small-card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-birthday-cake"></i> {{ card_doc.get('title', 'Birthdays This Week') }}</span>
+            {% if admin_logged_in %}
+              <button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>
+            {% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <div class="item birthday-item" data-name="{{ item.employee_name }}">
+                <div class="item-content-wrapper">
+                    <span class="item-text-details"><i class="fas fa-user"></i><span>{{ item.employee_name }} – {{ item.birthday_date }}</span></span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete birthday: \'{{ item.employee_name }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Birthday">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </div>
+            {% else %}
+                {% if not admin_logged_in %}<div class="item">No birthdays this week.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>{% else %}<div class="grid-row"><div class="card small-card"><div class="card-title">Birthdays</div><p>Card data not loaded.</p></div></div>{% endif %}
+
+      {% if data|length > 3 and data[3] %}{% set card_doc = data[3] %}
       <div class="grid-row">
+        <div class="card small-card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-heart"></i> {{ card_doc.get('title', 'Anniversaries') }}</span>
+            {% if admin_logged_in %}
+              <button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>
+            {% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <div class="item anniversary-item" data-names="{{ item.names }}">
+                <div class="item-content-wrapper">
+                    <span class="item-text-details"><i class="fas fa-user-friends"></i><span>{{ item.names }} – {{ item.anniversary_date }}</span></span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete anniversary for \'{{ item.names }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Anniversary">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </div>
+            {% else %}
+                {% if not admin_logged_in %}<div class="item">No anniversaries.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>{% else %}<div class="grid-row"><div class="card small-card"><div class="card-title">Anniversaries</div><p>Card data not loaded.</p></div></div>{% endif %}
+
+      <div class="grid-row">
+        {% if data|length > 4 and data[4] %}{% set card_doc = data[4] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-link"></i> {{ card_doc.get('title', 'Quick Links') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <a href="{{ item.link_url if item.link_url else '#' }}" target="_blank" rel="noopener noreferrer" class="item">
+                <div class="item-content-wrapper">
+                    <span class="item-text-details"><i class="fas fa-user-clock"></i><span>{{ item.link_name }}</span></span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete link: \'{{ item.link_name }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Link">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </a>
+            {% else %}
+                {% if not admin_logged_in %}<div class="item">No quick links.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Quick Links</div><p>Card data not loaded.</p></div>{% endif %}
+
+        {% if data|length > 5 and data[5] %}{% set card_doc = data[5] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-plane-departure"></i> {{ card_doc.get('title', 'Leave Portal') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <a href="{{ item.link_url if item.link_url else '#' }}" target="_blank" rel="noopener noreferrer" class="item">
+                <div class="item-content-wrapper">
+                  <span class="item-text-details"><i class="fas fa-plane-departure"></i><span>{{ item.link_name }}</span></span>
+                  {% if admin_logged_in and item._id %}
+                  <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete link: \'{{ item.link_name }}\'?')">
+                      <button type="submit" class="delete-item-button" title="Delete Link">X</button>
+                  </form>
+                  {% endif %}
+                </div>
+              </a>
+            {% else %}
+                {% if not admin_logged_in %}<div class="item">No leave portal links.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Leave Portal</div><p>Card data not loaded.</p></div>{% endif %}
+
+        {% if data|length > 6 and data[6] %}{% set card_doc = data[6] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-share-alt"></i> {{ card_doc.get('title', 'Social Media Highlights') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <div class="item-content-wrapper" style="margin-bottom: 5px; display:block;">
+                <p class="item-text-details">{{ item.text }}</p>
+                {% if admin_logged_in and item._id %}
+                <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" style="text-align:right;" onsubmit="return confirm('Delete highlight: \'{{ item.text|truncate(30, True) }}\'?')">
+                    <button type="submit" class="delete-item-button" title="Delete Highlight">X</button>
+                </form>
+                {% endif %}
+              </div>
+            {% else %}
+                {% if not admin_logged_in %}<p>No social media highlights.</p>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Social Media</div><p>Card data not loaded.</p></div>{% endif %}
+
+        {% if data|length > 7 and data[7] %}{% set card_doc = data[7] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-briefcase"></i> {{ card_doc.get('title', 'Career Opportunities') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <div class="item">
+                <div class="item-content-wrapper">
+                    <span class="item-text-details">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>
+                            {{ item.job_title }} 
+                            {% if item.department %}({{item.department}}){% endif %}
+                            {% if item.details_url and item.details_url != "#" and item.details_url|length > 1 %} {# Check length > 1 for non-empty optional URLs #}
+                                <a href="{{ item.details_url }}" target="_blank" title="View Details" style="margin-left: 5px; font-size:0.8em;">Details</a>
+                            {% endif %}
+                        </span>
+                    </span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete opportunity: \'{{ item.job_title }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Opportunity">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </div>
+            {% else %}
+                {% if not admin_logged_in %}<div class="item">No career opportunities listed.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Career Opps</div><p>Card data not loaded.</p></div>{% endif %}
+      </div> {% if data|length > 8 and data[8] %}{% set card_doc = data[8] %}
+      <div class="grid-row">
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-bullhorn"></i> {{ card_doc.get('title', 'Word from HR') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+             <div class="item-content-wrapper" style="margin-bottom: 5px; display:block;">
+                <p class="item-text-details">{{ item.text }}</p>
+                {% if admin_logged_in and item._id %}
+                <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" style="text-align:right;" onsubmit="return confirm('Delete message: \'{{ item.text|truncate(30, True) }}\'?')">
+                    <button type="submit" class="delete-item-button" title="Delete Message">X</button>
+                </form>
+                {% endif %}
+              </div>
+            {% else %}
+                {% if not admin_logged_in %}<p>No messages from HR.</p>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>{% else %}<div class="grid-row"><div class="card"><div class="card-title">Word from HR</div><p>Card data not loaded.</p></div></div>{% endif %}
+
+       <div class="grid-row">
+        {% if data|length > 9 and data[9] %}{% set card_doc = data[9] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-bell"></i> {{ card_doc.get('title', 'Quick Reminders') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <ul>
+            {% for item in card_doc.get('data', []) %}
+              <li>
+                <div class="item-content-wrapper">
+                    <span class="item-text-details">{{ item.reminder }}</span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete reminder: \'{{ item.reminder|truncate(30, True) }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Reminder">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </li>
+            {% else %}
+                {% if not admin_logged_in %}<li>No quick reminders.</li>{% endif %}
+            {% endfor %}
+          </ul>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Reminders</div><p>Card data not loaded.</p></div>{% endif %}
+
+        {% if data|length > 10 and data[10] %}{% set card_doc = data[10] %}
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-holly-berry"></i> {{ card_doc.get('title', 'Upcoming Holidays') }}</span>
+            {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+          </div>
+          <ul>
+            {% for item in card_doc.get('data', []) %}
+              <li>
+                <div class="item-content-wrapper">
+                    <span class="item-text-details">{{ item.holiday_name }} – {{ item.holiday_date }}</span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete holiday: \'{{ item.holiday_name }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Holiday">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </li>
+            {% else %}
+                {% if not admin_logged_in %}<li>No upcoming holidays listed.</li>{% endif %}
+            {% endfor %}
+          </ul>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>{% else %}<div class="card"><div class="card-title">Holidays</div><p>Card data not loaded.</p></div>{% endif %}
+      </div> </div> <div class="column engagement-cards-column">
+      <div class="grid-row" id="banners_section">
         <div class="card">
-          <div class="card-title"><i class="fas fa-images"></i> Photo Gallery</div>
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-images"></i> Banners</span>
+            {% if admin_logged_in %}
+                <button class="toggle-admin-form-button" data-formid="admin-form-banners">Manage</button>
+            {% endif %}
+          </div>
           <div class="slideshow-container" id="slideshowContainerElement">
             <div class="slides" id="slides">
-              {% for item in data[11].data %}
-                <img src="{{ item.image_url }}" alt="Image" />
+              {% for banner_item in banners %}
+                <figure>
+                    <img src="{{ url_for('static', filename=banner_item.image_path) }}" alt="{{ banner_item.title }}" />
+                    <figcaption>
+                        {{banner_item.title}}
+                        {% if banner_item.description %}<span>{{banner_item.description}}</span>{% endif %}
+                    </figcaption>
+                    {% if admin_logged_in %}
+                    <form method="POST" action="{{ url_for('delete_banner_action', banner_id_str=banner_item._id) }}" onsubmit="return confirm('Are you sure you want to delete this banner: \'{{ banner_item.title }}\'?')">
+                        <button type="submit" class="admin-action-button" title="Delete Banner">Delete</button>
+                    </form>
+                    {% endif %}
+                </figure>
+              {% else %}
+                <p style="text-align:center; padding:20px;">No banners to display.</p>
               {% endfor %}
             </div>
           </div>
+          {% if admin_logged_in %}
+          <div class="admin-controls-section" id="admin-form-banners" style="display:none;">
+              <h5>Add New Banner</h5>
+              <form method="POST" action="{{ url_for('add_banner_action') }}" enctype="multipart/form-data">
+                  <div class="form-field-group"><label for="banner_title_input">Title:</label><input type="text" name="banner_title" id="banner_title_input" required></div>
+                  <div class="form-field-group"><label for="banner_description_input">Description:</label><textarea name="banner_description" id="banner_description_input" required></textarea></div>
+                  <div class="form-field-group"><label for="banner_image_input">Image:</label><input type="file" name="banner_image" id="banner_image_input" accept="image/*" required></div>
+                  <button type="submit">Add Banner</button>
+              </form>
+          </div>
+          {% endif %}
         </div>
       </div>
-      <div class="grid-row">
+
+      <div class="grid-row" id="gallery_section">
         <div class="card">
-          <div class="card-title"><i class="fas fa-images"></i> Photo Gallery 2</div>
+          <div class="card-title">
+            <span class="card-title-text"><i class="fas fa-camera-retro"></i> In-House Photo Gallery</span>
+            {% if admin_logged_in %}
+                <button class="toggle-admin-form-button" data-formid="admin-form-gallery">Manage</button>
+            {% endif %}
+          </div>
           <div class="slideshow-container" id="slideshowContainerElement2">
             <div class="slides" id="slides2">
-              {% for item in data[11].data %}
-                <img src="{{ item.image_url }}" alt="Image" />
+              {% for photo in gallery_photos %}
+                <figure>
+                    <img src="{{ url_for('static', filename=photo.image_url) }}" alt="{{ photo.caption if photo.caption else 'Gallery Image' }}" />
+                    {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+                    {% if admin_logged_in %}
+                    <form method="POST" action="{{ url_for('delete_gallery_photo_action', photo_id_str=photo._id) }}" onsubmit="return confirm('Are you sure you want to delete this photo{{ ' with caption \'' ~ photo.caption ~ '\'' if photo.caption else '' }}?')">
+                        <button type="submit" class="admin-action-button" title="Delete Photo">Delete</button>
+                    </form>
+                    {% endif %}
+                </figure>
+              {% else %}
+                <p style="text-align:center; padding:20px;">No photos in this gallery yet.</p>
               {% endfor %}
             </div>
           </div>
+           {% if admin_logged_in %}
+          <div class="admin-controls-section" id="admin-form-gallery" style="display:none;">
+              <h5>Add New Gallery Photo</h5>
+              <form method="POST" action="{{ url_for('add_gallery_photo_action') }}" enctype="multipart/form-data">
+                  <div class="form-field-group"><label for="gallery_caption_input">Caption (Optional):</label><input type="text" name="gallery_caption" id="gallery_caption_input"></div>
+                  <div class="form-field-group"><label for="gallery_image_input">Image:</label><input type="file" name="gallery_image" id="gallery_image_input" accept="image/*" required></div>
+                  <button type="submit">Add Photo</button>
+              </form>
+          </div>
+          {% endif %}
         </div>
       </div>
+      
+      {% if data|length > 11 and data[11] %}{% set card_doc = data[11] %}
+      {% if card_doc.title == "Legacy Gallery Info" %} {# Only show if it's this specific placeholder card #}
       <div class="grid-row">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-award"></i> Rewards & Recognitions</div>
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+          <div class="card-title">
+              <span class="card-title-text"><i class="fas fa-info-circle"></i> {{ card_doc.get('title', 'Legacy Info') }}</span>
+              {% if admin_logged_in %}
+                <button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>
+              {% endif %}
+          </div>
+          <div class="items-container">
+            {% for item in card_doc.get('data', []) %}
+              <div class="item">
+                <div class="item-content-wrapper">
+                    <span class="item-text-details">{{ item.info }}</span>
+                    {% if admin_logged_in and item._id %}
+                    <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete info: \'{{ item.info|truncate(30, True) }}\'?')">
+                        <button type="submit" class="delete-item-button" title="Delete Info">X</button>
+                    </form>
+                    {% endif %}
+                </div>
+              </div>
+            {% else %}
+              {% if not admin_logged_in %}<div class="item">No legacy info.</div>{% endif %}
+            {% endfor %}
+          </div>
+          {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+            {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+            <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+              <h5>Add to "{{ card_title_for_struct }}"</h5>
+              {% if structure and structure.fields %}
+              <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                {% for field_name, field_type in structure.fields.items() %}
+                <div class="form-field-group">
+                  <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                  {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                  {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                </div>
+                {% endfor %}<button type="submit">Add Item</button>
+              </form>
+              {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}{% endif %}
+
+
+      {% if data|length > 12 and data[12] %}{% set card_doc = data[12] %}
+      <div class="grid-row">
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+            <div class="card-title">
+                <span class="card-title-text"><i class="fas fa-award"></i> {{ card_doc.get('title', 'Rewards & Recognitions') }}</span>
+                {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+            </div>
             <div class="items-container">
-                {% for item in data[12].data %}
+                {% for item in card_doc.get('data', []) %}
                   <div class="recognition-item">
-                    <img src="https://i.pravatar.cc/50?img=68" alt="Employee Photo" class="photo" />
-                    <div class="details">
-                        <span class="name">{{ item.employee_name }}</span>
-                        <span>{{ item.employee_title }}</span>
-                        <span class="award">{{ item.award }}</span>
+                    <div class="item-content-wrapper">
+                        <span class="item-text-details">
+                            <img src="https://i.pravatar.cc/40?u={{item.employee_name|urlencode}}" alt="Photo" class="photo" />
+                            <div class="details">
+                                <span class="name">{{ item.employee_name }}</span>
+                                <span>{{ item.employee_title }}</span>
+                                <span class="award">{{ item.award }}</span>
+                            </div>
+                        </span>
+                        {% if admin_logged_in and item._id %}
+                        <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete recognition for \'{{ item.employee_name }}\'?')">
+                            <button type="submit" class="delete-item-button" title="Delete Recognition">X</button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
+                {% else %}
+                    {% if not admin_logged_in %}<div class="item">No rewards or recognitions listed.</div>{% endif %}
                 {% endfor %}
             </div>
+            {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+              {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+              <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+                <h5>Add to "{{ card_title_for_struct }}"</h5>
+                {% if structure and structure.fields %}
+                <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                  {% for field_name, field_type in structure.fields.items() %}
+                  <div class="form-field-group">
+                    <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                    {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                    {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                  </div>
+                  {% endfor %}<button type="submit">Add Item</button>
+                </form>
+                {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+              </div>
+            {% endif %}
         </div>
-    </div>
+      </div>{% else %}<div class="grid-row"><div class="card"><div class="card-title">Rewards</div><p>Card data not loaded.</p></div></div>{% endif %}
+
+      {% if data|length > 13 and data[13] %}{% set card_doc = data[13] %}
       <div class="grid-row">
+        <div class="card" id="card_admin_{{ card_doc._id }}">
+            <div class="card-title">
+                <span class="card-title-text"><i class="fas fa-lightbulb"></i> {{ card_doc.get('title', 'Fun Facts') }}</span>
+                {% if admin_logged_in %}<button class="toggle-admin-form-button" data-formid="admin-form-{{ card_doc._id }}">Manage</button>{% endif %}
+            </div>
+            <div class="items-container">
+                {% for item in card_doc.get('data', []) %}
+                  <div class="item">
+                    <div class="item-content-wrapper">
+                        <span class="item-text-details"><span>{{item.fact}}</span></span>
+                        {% if admin_logged_in and item._id %}
+                        <form method="POST" action="{{ url_for('delete_hrc_item_action', card_id_str=card_doc._id, item_id_str=item._id) }}" class="item-actions" onsubmit="return confirm('Delete fact: \'{{ item.fact|truncate(30,True) }}\'?')">
+                            <button type="submit" class="delete-item-button" title="Delete Fact">X</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                  </div>
+                {% else %}
+                    {% if not admin_logged_in %}<div class="item">No fun facts yet!</div>{% endif %}
+                {% endfor %}
+            </div>
+            {% if admin_logged_in and CARD_STRUCTURES_FOR_TEMPLATE %}
+              {% set card_title_for_struct = card_doc.get('title') %}{% set structure = CARD_STRUCTURES_FOR_TEMPLATE.get(card_title_for_struct) %}
+              <div class="admin-controls-section" id="admin-form-{{ card_doc._id }}" style="display:none;">
+                <h5>Add to "{{ card_title_for_struct }}"</h5>
+                {% if structure and structure.fields %}
+                <form method="POST" action="{{ url_for('add_hrc_item_action', card_id_str=card_doc._id) }}">
+                  {% for field_name, field_type in structure.fields.items() %}
+                  <div class="form-field-group">
+                    <label for="field_{{ card_doc._id }}_{{ field_name }}">{{ structure.labels.get(field_name, field_name|replace('_', ' ')|capitalize) }}:</label>
+                    {% if field_type == 'textarea' %}<textarea name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}"></textarea>
+                    {% else %}<input type="{{ field_type }}" name="{{ field_name }}" id="field_{{ card_doc._id }}_{{ field_name }}">{% endif %}
+                  </div>
+                  {% endfor %}<button type="submit">Add Item</button>
+                </form>
+                {% else %}<p><em>Admin: Card structure for "{{ card_title_for_struct }}" not defined.</em></p>{% endif %}
+              </div>
+            {% endif %}
+        </div>
+      </div>
+      {% else %} {# Fallback to original hardcoded Fun Facts if not managed via DB or data[13] is missing #}
+       <div class="grid-row">
         <div class="card">
             <div class="card-title"><i class="fas fa-lightbulb"></i> Fun Facts</div>
             <div class="items-container">
@@ -191,9 +844,12 @@
             </div>
         </div>
       </div>
+      {% endif %}
+
+
       <div class="grid-row">
         <div class="card">
-            <div class="card-title"><i class="fas fa-hashtag"></i> Follow Our Journey</div>
+            <div class="card-title"><span class="card-title-text"><i class="fas fa-hashtag"></i> Follow Our Journey</span></div>
             <div class="items-container">
                 <a href="https://linkedin.com/company/alltake" target="_blank" rel="noopener noreferrer" class="item">
                     <i class="fab fa-linkedin"></i><span>LinkedIn</span>
@@ -204,143 +860,59 @@
                 <a href="https://www.instagram.com/alltakeb2b/" target="_blank" rel="noopener noreferrer" class="item">
                     <i class="fab fa-instagram"></i><span>Instagram</span>
                 </a>
-                <a href="https://x.com/i/flow/login?redirect_after_login=%2Falltake_b2b" target="_blank" rel="noopener noreferrer" class="item">
+                <a href="https://x.com/alltake_b2b" target="_blank" rel="noopener noreferrer" class="item">
                     <i class="fab fa-x-twitter"></i><span>X (Twitter)</span>
                 </a>
             </div>
         </div>
       </div>
-      <div class="grid-row">
-      </div>
-    </div>
-  </div>
 
-  <div class="lightbox" id="lightbox">
+    </div> </div> <div class="lightbox" id="lightbox">
     <span class="lightbox-close" onclick="closeLightbox()">×</span>
-    <a class="lightbox-prev" onclick="changeSlide(-1)">❮</a>
-    <a class="lightbox-next" onclick="changeSlide(1)">❯</a>
-    <img src="" alt="" />
+    <a class="lightbox-prev" onclick="changeLightboxSlide(-1)">❮</a>
+    <a class="lightbox-next" onclick="changeLightboxSlide(1)">❯</a>
+    <img src="" alt="Lightbox Image" />
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+  <script src="{{ url_for('static', filename='js/hero2.js') }}"></script>
   <script>
-    function changeWeather(weather, videoSource) {
-      const video = document.querySelector('.background-video');
-      video.src = videoSource;
-      video.load();
-      video.play();
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Script to toggle admin forms
+        const toggleButtons = document.querySelectorAll('.toggle-admin-form-button');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const formId = this.dataset.formid;
+                const formElement = document.getElementById(formId);
+                if (formElement) {
+                    const isHidden = formElement.style.display === 'none' || formElement.style.display === '';
+                    formElement.style.display = isHidden ? 'block' : 'none';
+                    this.textContent = isHidden ? 'Cancel Edit' : 'Manage'; // Change button text
+                    if (isHidden) {
+                       const firstInput = formElement.querySelector('input:not([type="hidden"]):not([type="file"]), textarea');
+                       if(firstInput) firstInput.focus();
+                    }
+                }
+            });
+        });
 
-    function openLightbox(event) {
-      const lightbox = document.getElementById("lightbox");
-      const lightboxImg = lightbox.querySelector('img');
-      lightboxImg.src = event.target.src;
-      lightbox.classList.add('active');
-    }
-
-    function closeLightbox() {
-      document.getElementById("lightbox").classList.remove('active');
-    }
-
-    function changeSlide(n) {
-      const lightboxImg = document.querySelector('.lightbox img');
-      const currentSrc = lightboxImg.src;
-      const slides = document.querySelectorAll('.slideshow-container img');
-      let currentIndex = Array.from(slides).findIndex(img => img.src === currentSrc);
-
-      currentIndex = (currentIndex + n + slides.length) % slides.length;
-      lightboxImg.src = slides[currentIndex].src;
-    }
-
-    let slideIndex1 = 1;
-    let slideIndex2 = 1;
-    showSlides(slideIndex1, "slides1");
-    showSlides(slideIndex2, "slides2");
-
-    function changeSlide(n, slideshowId) {
-      if (slideshowId === "slides1") {
-        showSlides(slideIndex1 += n, slideshowId);
-      } else if (slideshowId === "slides2") {
-        showSlides(slideIndex2 += n, slideshowId);
-      }
-    }
-
-    function showSlides(n, slideshowId) {
-      let i;
-      let slideIndex = 0;
-      if (slideshowId === "slides1") {
-        slideIndex = slideIndex1;
-      } else if (slideshowId === "slides2") {
-        slideIndex = slideIndex2;
-      }
-      const slides = document.getElementById(slideshowId).getElementsByTagName("img");
-      const lightboxImg = document.querySelector('.lightbox img');
-      const prevButton = document.querySelector('.lightbox-prev');
-      const nextButton = document.querySelector('.lightbox-next');
-
-      if (n > slides.length) {
-        if (slideshowId === "slides1") {
-          slideIndex1 = 1;
-          slideIndex = slideIndex1;
-        } else if (slideshowId === "slides2") {
-          slideIndex2 = 1;
-          slideIndex = slideIndex2
-        }
-      }
-      if (n < 1) {
-        if (slideshowId === "slides1") {
-          slideIndex1 = slides.length;
-          slideIndex = slideIndex1;
-        } else if (slideshowId === "slides2") {
-          slideIndex2 = slides.length;
-          slideIndex = slideIndex2;
-        }
-      }
-      for (i = 0; i < slides.length; i++) {
-        slides[i].style.display = "none";
-      }
-      if (slides[slideIndex - 1]) {
-        slides[slideIndex - 1].style.display = "block";
-        lightboxImg.src = slides[slideIndex - 1].src;
-      }
-
-      // Disable prev/next buttons if only one image
-      if (slides.length <= 1) {
-        prevButton.classList.add('disabled');
-        nextButton.classList.add('disabled');
-      } else {
-        prevButton.classList.remove('disabled');
-        nextButton.classList.remove('disabled');
-      }
-    }
-
-    const slideshowContainer1 = document.getElementById('slideshowContainerElement');
-    slideshowContainer1.addEventListener('click', function(event) {
-      if (event.target.tagName === 'IMG') {
-        openLightbox(event);
-      }
+        // Auto-hide flash messages after a few seconds
+        const flashMessages = document.querySelectorAll('.flashes li');
+        flashMessages.forEach(function(flash) {
+            setTimeout(function() {
+                let opacity = 1;
+                let interval = setInterval(function() {
+                    if (opacity <= 0.05) { // Lower threshold for complete fade
+                        clearInterval(interval);
+                        flash.style.display = 'none';
+                    }
+                    flash.style.opacity = opacity;
+                    opacity -= opacity * 0.1;
+                }, 30);
+            }, 7000); // 7 seconds delay
+        });
     });
-    const slideshowContainer2 = document.getElementById('slideshowContainerElement2');
-    slideshowContainer2.addEventListener('click', function(event) {
-      if (event.target.tagName === 'IMG') {
-        openLightbox(event);
-      }
-    });
-
-    function openLightbox() {
-      document.getElementById("lightbox").classList.add('active');
-    }
-
-    function closeLightbox() {
-      document.getElementById("lightbox").classList.remove('active');
-    }
-
-    function openGift() {
-      document.getElementById("giftOverlay").classList.add('opened');
-    }
-
-    function closeGift() {
-      document.getElementById("giftOverlay").classList.remove('opened');
-    }
   </script>
 </body>
 </html>

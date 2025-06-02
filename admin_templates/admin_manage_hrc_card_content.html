@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Card: {{ card_title_display }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">Admin Panel</a>
+         <ul class="navbar-nav mr-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="container mt-4">
+        <h1>Manage Items for: <em>{{ card_title_display }}</em></h1>
+        <p><small>Card ID: {{ card._id }}</small></p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card mb-4">
+            <div class="card-header">Add New Item to "{{ card_title_display }}"</div>
+            <div class="card-body">
+                {% if form_fields %}
+                <form method="POST" action="{{ url_for('admin.add_hrc_card_item', card_id_str=card._id|string) }}">
+                    {% for field_name, field_type in form_fields.items() %}
+                    <div class="form-group">
+                        <label for="{{ field_name }}">{{ field_name|replace('_', ' ')|capitalize }}</label>
+                        {% if field_type == 'textarea' %}
+                        <textarea name="{{ field_name }}" id="{{ field_name }}" class="form-control" rows="3"></textarea>
+                        {% elif field_type == 'date' %}
+                        <input type="date" name="{{ field_name }}" id="{{ field_name }}" class="form-control">
+                        {% else %}
+                        <input type="{{ field_type }}" name="{{ field_name }}" id="{{ field_name }}" class="form-control">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </form>
+                {% elif card_title_display == "Office Rules" %} {# Specific handling for Office Rules as example #}
+                 <form method="POST" action="{{ url_for('admin.add_hrc_card_item', card_id_str=card._id|string) }}">
+                    <div class="form-group">
+                        <label for="rule">Rule</label>
+                        <input type="text" name="rule" id="rule" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Rule</button>
+                </form>
+                {% else %}
+                <p><em>This card type does not have a predefined "add item" form structure in CARD_STRUCTURES. Generic input might not work as expected. Please configure it in app.py.</em></p>
+                {# Fallback generic form - you might remove this or make it more robust #}
+                <form method="POST" action="{{ url_for('admin.add_hrc_card_item', card_id_str=card._id|string) }}">
+                    <div class="form-group">
+                        <label for="value">Item Value/Text</label>
+                        <input type="text" name="value" id="value" class="form-control" placeholder="Enter item content">
+                    </div>
+                     <button type="submit" class="btn btn-primary">Add Generic Item</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2>Existing Items in "{{ card_title_display }}"</h2>
+        {% if card.data %}
+            <ul class="list-group">
+                {% for item in items %} {# items is now card.data with potential _id enrichment #}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                        {% if item is mapping %} {# Check if item is a dictionary #}
+                            {% for key, value in item.items() %}
+                                {% if key != '_id' %} {# Don't display our internal _id #}
+                                 <strong>{{ key|replace('_', ' ')|capitalize }}:</strong> {{ value }}<br>
+                                {% endif %}
+                            {% endfor %}
+                            <small class="text-muted">Item ID (for deletion): {{ item._id }}</small>
+                        {% else %}
+                            {{ item }} {# For simple list of strings, though we wrapped it #}
+                        {% endif %}
+                        </div>
+                        <form method="POST" action="{{ url_for('admin.delete_hrc_card_item', card_id_str=card._id|string, item_id_str=item._id|string) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No items in this card yet.</p>
+        {% endif %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

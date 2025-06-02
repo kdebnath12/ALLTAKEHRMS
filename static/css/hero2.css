@@ -1,0 +1,370 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #000;
+  color: white;
+  padding: 2%;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.logo {
+  position: absolute;
+  top: 10px;
+  left: 20px; /* Moved right a little bit */
+  width: 100px; /* Increased size by 150% */
+  transform: scale(1.5);
+  z-index: 10; /* Ensure it's above the video */
+}
+
+video.background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+}
+
+.weather-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.weather-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.3s;
+}
+
+.weather-buttons button:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.dashboard-content-wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Left column (useful) wider */
+    gap: 1.5rem;
+    margin-top: 1.5rem; /* Space from weather buttons */
+    z-index: 1; /* Ensure it's above overlay but below popups */
+    position: relative;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Gap between grid-rows or cards within this column */
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjusted minmax for potentially narrower cards in 2/3 column */
+  gap: 1.5rem;
+  align-items: stretch; /* Makes cards in the same row equal height */
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.card ul {
+  padding-left: 20px;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  flex-grow: 1;
+  margin-bottom: 0;
+  list-style-position: outside;
+}
+
+.card li {
+  margin-bottom: 6px;
+}
+
+.item, a.item { /* Apply .item styles to <a> tags as well */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: none; /* For <a> tags */
+  color: white; /* For <a> tags */
+}
+.item:last-child, a.item:last-child {
+    margin-bottom: 0;
+}
+
+.item:hover, a.item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.item i, a.item i {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+ .item span, a.item span {
+    flex-grow: 1; /* Allow text to take remaining space */
+    word-break: break-word; /* Prevent long text from breaking layout */
+}
+
+.items-container {
+    flex-grow: 1;
+    /* overflow-y: auto; /* Add scroll if items exceed card height */
+    /* max-height: 200px; /* Example max height before scroll for item lists */
+}
+
+.recognition-item {
+    display: flex;
+    align-items: flex-start; /* Align items to the start for better photo/text alignment */
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.recognition-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.recognition-item .photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+}
+
+.recognition-item .details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.recognition-item .name {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.recognition-item .award {
+    font-style: italic;
+    color: #e9c46a; /* A nice highlight color */
+}
+
+
+@media (max-width: 1200px) { /* Adjust breakpoint for when 2-column layout stacks */
+    .dashboard-content-wrapper {
+        grid-template-columns: 1fr; /* Stack columns */
+    }
+}
+@media (max-width: 768px) { /* Cards become full width earlier */
+  .grid-row {
+     grid-template-columns: 1fr;
+  }
+}
+
+
+/* Icon colors */
+.fa-calendar-alt, .fa-calendar-days { color: #f39c12; }
+.fa-user, .fa-user-friends { color: #3498db; }
+.fa-heart { color: #e74c3c; }
+.fa-briefcase, .fa-award { color: #9b59b6; } /* Added fa-award */
+.fa-presentation-screen, .fa-chalkboard-teacher { color: #1abc9c; }
+.fa-laptop-code { color: #2ecc71; }
+.fa-clipboard-list { color: #e67e22; }
+.fa-bell, .fa-lightbulb { color: #f1c40f; }
+.fa-holly-berry { color: #c0392b; }
+.fa-birthday-cake { color: #d35400;}
+.fa-images { color: #1abc9c; }
+.fa-bullhorn { color: #3498db; }
+/* Quick Links Icons */
+.fa-user-clock { color: #16a085; }
+.fa-plane-departure { color: #2980b9; }
+.fa-file-invoice-dollar { color: #27ae60; }
+/* Social Media Icons */
+.fab.fa-linkedin, .fab.fa-linkedin-in { color: #0077b5; }
+.fab.fa-facebook-f, .fab.fa-facebook-square { color: #3b5998; }
+.fab.fa-instagram, .fab.fa-instagram-square { color: #e4405f; }
+.fab.fa-twitter, .fab.fa-x-twitter { color: #000000; } /* X is black */
+.fab.fa-youtube { color: #ff0000; }
+
+
+/* Gift Animation Styles (unchanged, kept for completeness) */
+.gift-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 10000; overflow: hidden; }
+.gift-container { position: relative; display: flex; flex-direction: column; align-items: center; transition: all 1s ease; }
+.gift-box { position: relative; width: 150px; height: 100px; background: linear-gradient(145deg, #e9c46a, #f4a261); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.5s ease; }
+.gift-box::before { content: ""; position: absolute; width: 20px; height: 100%; background: linear-gradient(145deg, #e76f51, #d62d20); left: 50%; transform: translateX(-50%); border-radius: 4px; }
+.gift-lid { position: absolute; top: -30px; left: -10px; width: 170px; height: 30px; background: linear-gradient(145deg, #e9c46a, #f4a261); border-radius: 8px 8px 4px 4px; transform-origin: bottom center; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.gift-lid::before { content: ""; position: absolute; width: 20px; height: 100%; background: linear-gradient(145deg, #e76f51, #d62d20); left: 50%; transform: translateX(-50%); border-radius: 4px; }
+.gift-ribbon { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 40px; height: 15px; background: #e76f51; border-radius: 50% 50% 0 0; }
+.gift-ribbon::before, .gift-ribbon::after { content: ""; position: absolute; top: 100%; width: 8px; height: 20px; background: #e76f51; transform: skew(20deg); }
+.gift-ribbon::before { left: 8px; } .gift-ribbon::after { right: 8px; transform: skew(-20deg); }
+.opened .gift-lid { transform: rotateX(-120deg) translateY(-20px); }
+.balloon-mode .gift-container { animation: floatUp 3s ease-out forwards; }
+.falling-mode .gift-container { animation: fallDown 2s ease-in forwards; }
+.wishes-text { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); font-size: 2rem; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); opacity: 0; transition: all 0.8s ease; text-align: center; white-space: nowrap; }
+.opened .wishes-text { opacity: 1; transform: translateX(-50%) translateY(-20px); }
+.sparkles { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 200px; height: 100px; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
+.opened .sparkles { opacity: 1; }
+.sparkle { position: absolute; width: 8px; height: 8px; background: #fee440; border-radius: 50%; animation: sparkle 1.2s ease-in-out infinite; }
+.sparkle:nth-child(1) { left: 20%; top: 20%; animation-delay: 0s; } .sparkle:nth-child(2) { left: 80%; top: 30%; animation-delay: 0.2s; } .sparkle:nth-child(3) { left: 60%; top: 10%; animation-delay: 0.4s; } .sparkle:nth-child(4) { left: 40%; top: 60%; animation-delay: 0.6s; } .sparkle:nth-child(5) { left: 10%; top: 70%; animation-delay: 0.8s; } .sparkle:nth-child(6) { left: 90%; top: 80%; animation-delay: 1s; }
+@keyframes sparkle { 0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { transform: scale(1.5) rotate(180deg); opacity: 1; } }
+@keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 50% { transform: translateY(-80px) scale(1.5); opacity: 0.8; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } }
+@keyframes fallDown { 0% { transform: translateY(-200px) scale(2); opacity: 0; } 100% { transform: translateY(100vh) scale(1); opacity: 0.3; } }
+.close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: #fff; cursor: pointer; z-index: 10001; transition: transform 0.3s ease; }
+.close-btn:hover { transform: scale(1.2); }
+
+/* Slideshow Styles */
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  margin: 0; /* Changed from margin: auto to remove potential centering issues */
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(255,255,255,0.1);
+  aspect-ratio: 16 / 10;
+  /* margin-top: auto; Pushes slideshow to bottom if card is stretched taller - this can be problematic with Slick */
+}
+/* Styling for the div that Slick Carousel will target */
+.slides {
+  display: flex; /* Slick will override this, but good for pre-JS */
+  height: 100%;
+}
+.slides img, .slick-slide img {
+  width: 100%; /* Ensure image takes full width of the slide */
+  height: 100%; /* Ensure image takes full height of the slide */
+  object-fit: cover; /* Cover the slide area, cropping if necessary */
+  display: block;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 0px; /* Images inside slick shouldn't have their own radius if container has one */
+}
+/* Ensure Slick slides fill the container height */
+.slick-slide {
+    height: auto; /* Let Slick manage slide height based on content or container */
+}
+.slick-slide > div { /* Slick often wraps slides in a div */
+    height: 100%;
+    display: flex; /* To help center or align image if needed */
+    align-items: center;
+    justify-content: center;
+}
+/* Slick Dots custom styling (optional) */
+.slick-dots li button:before {
+    font-size: 10px;
+    color: white;
+    opacity: 0.5;
+}
+.slick-dots li.slick-active button:before {
+    opacity: 1;
+    color: #f39c12; /* Example active dot color */
+}
+
+
+/* Fullscreen Lightbox */
+.lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0s linear 0.3s; z-index: 11000; }
+.lightbox.active { visibility: visible; opacity: 1; transition-delay: 0s; }
+.lightbox img { max-width: 85vw; max-height: 85vh; border-radius: 10px; box-shadow: 0 0 40px rgba(255,255,255,0.5); object-fit: contain; }
+.lightbox-close { position: fixed; top: 20px; right: 30px; font-size: 3rem; color: white; cursor: pointer; user-select: none; z-index: 11001; }
+.lightbox-prev, .lightbox-next {
+    cursor: pointer; position: absolute; top: 50%; width: auto; padding: 16px;
+    margin-top: -30px; color: white; font-weight: bold; font-size: 30px;
+    transition: 0.6s ease; border-radius: 0 3px 3px 0; user-select: none;
+    background-color: rgba(0,0,0,0.3); z-index: 11001;
+}
+.lightbox-prev { left: 15px; border-radius: 3px 0 0 3px; }
+.lightbox-next { right: 15px; border-radius: 0 3px 3px 0; }
+.lightbox-prev:hover, .lightbox-next:hover { background-color: rgba(0,0,0,0.8); }
+/* .lightbox-prev.disabled, .lightbox-next.disabled class is not used in JS logic, using style.display instead */
+
+
+/* Banner Styles */
+.banner-section {
+  margin-bottom: 1.5rem;
+}
+
+.banners-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.banner {
+  flex: 0 0 auto;
+  width: 300px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.banner img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.banner h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.banner p {
+  font-size: 0.9rem;
+}
+
+.small-card {
+  min-width: 200px; /* Adjust as needed */
+}
