@@ -368,3 +368,8 @@ video.background-video {
 .small-card {
   min-width: 200px; /* Adjust as needed */
 }
+
+/* Image expansion styles */
+.expandable-image-container {
+  cursor: pointer;
+}
